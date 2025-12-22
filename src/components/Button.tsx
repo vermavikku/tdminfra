@@ -7,6 +7,7 @@ type ButtonProps = {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
 };
 
 export default function Button({
@@ -16,6 +17,7 @@ export default function Button({
   size = 'md',
   className = '',
   type = 'button',
+  disabled = false,
 }: ButtonProps) {
   const baseStyles = 'font-semibold rounded-lg transition-all duration-300 inline-flex items-center justify-center';
 
@@ -31,11 +33,14 @@ export default function Button({
     lg: 'px-8 py-4 text-lg',
   };
 
+  const disabledStyles = 'opacity-50 cursor-not-allowed hover:opacity-50 hover:shadow-none';
+
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      disabled={disabled}
+      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled ? disabledStyles : ''} ${className}`}
     >
       {children}
     </button>

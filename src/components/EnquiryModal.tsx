@@ -1,7 +1,16 @@
 import { X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import Button from './Button';
-import { supabase, type Machinery } from '../lib/supabase';
+import { submitEnquiry } from '../lib/api';
+
+type Machinery = {
+  id: number;
+  title: string;
+  status: string;
+  image_url?: string;
+  created_at: string;
+  updated_at?: string;
+};
 
 type EnquiryModalProps = {
   isOpen: boolean;
@@ -14,7 +23,6 @@ export default function EnquiryModal({ isOpen, onClose, selectedMachine }: Enqui
     name: '',
     email: '',
     phone: '',
-    machine_type: selectedMachine?.type || '',
     message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,26 +36,17 @@ export default function EnquiryModal({ isOpen, onClose, selectedMachine }: Enqui
     setSubmitStatus('idle');
 
     try {
-      const { error } = await supabase.from('enquiries').insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          machine_type: formData.machine_type,
-          message: formData.message,
-        },
-      ]);
-
-      if (error) throw error;
+      await submitEnquiry({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message || (selectedMachine ? `Enquiry about ${selectedMachine.title}` : ''),
+        machinery_id: selectedMachine?.id,
+        machine_type: selectedMachine ? selectedMachine.title : '',
+      });
 
       setSubmitStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        machine_type: '',
-        message: '',
-      });
+      setFormData({ name: '', email: '', phone: '', message: '' });
 
       setTimeout(() => {
         onClose();
@@ -74,11 +73,23 @@ export default function EnquiryModal({ isOpen, onClose, selectedMachine }: Enqui
           </button>
         </div>
 
+         {submitStatus === 'success' && (
+              <div className="p-4 bg-green-100 text-green-700 rounded-lg text-sm">
+                Thank you! Your enquiry has been submitted successfully.
+              </div>
+            )}
+
+            {submitStatus === 'error' && (
+              <div className="p-4 bg-red-100 text-red-700 rounded-lg text-sm">
+                Sorry, there was an error submitting your enquiry. Please try again.
+              </div>
+          )}
+
         <div className="p-6">
           {selectedMachine && (
             <div className="mb-4 p-4 bg-gray-100 rounded-lg">
               <p className="text-sm text-gray-600">Enquiring about:</p>
-              <p className="font-bold text-dark">{selectedMachine.name}</p>
+              <p className="font-bold text-dark">{selectedMachine.title}</p>
             </div>
           )}
 
@@ -125,55 +136,26 @@ export default function EnquiryModal({ isOpen, onClose, selectedMachine }: Enqui
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-semibold text-dark mb-2">
-                Machine Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                required
-                value={formData.machine_type}
-                onChange={(e) => setFormData({ ...formData, machine_type: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="">Select a machine type</option>
-                <option value="excavator">Excavator</option>
-                <option value="crane">Crane</option>
-                <option value="loader">Loader</option>
-                <option value="dump_truck">Dump Truck</option>
-                <option value="bulldozer">Bulldozer</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-dark mb-2">
-                Message
+                Message <span className="text-gray-500 text-xs">(Optional)</span>
               </label>
               <textarea
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                rows={4}
+                rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                placeholder="Tell us about your requirements..."
+                placeholder="Any specific requirements or questions..."
               />
-            </div>
+            </div> */}
 
-            {submitStatus === 'success' && (
-              <div className="p-4 bg-green-100 text-green-700 rounded-lg text-sm">
-                Thank you! Your enquiry has been submitted successfully.
-              </div>
-            )}
-
-            {submitStatus === 'error' && (
-              <div className="p-4 bg-red-100 text-red-700 rounded-lg text-sm">
-                Sorry, there was an error submitting your enquiry. Please try again.
-              </div>
-            )}
 
             <Button
               type="submit"
               variant="primary"
               className="w-full"
               onClick={undefined}
+              disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 'Submit Enquiry'}
             </Button>

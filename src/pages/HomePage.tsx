@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Clock, Wrench, ArrowRight } from 'lucide-react';
 import Button from '../components/Button';
 import MachineryCard from '../components/MachineryCard';
-import { supabase, type Machinery } from '../lib/supabase';
+import { getFeaturedMachineries } from '../lib/api';
 
 type HomePageProps = {
-  onNavigate: (page: string) => void;
-  onEnquire: (machinery: Machinery) => void;
+  onEnquire: (machinery: any) => void;
 };
 
-export default function HomePage({ onNavigate, onEnquire }: HomePageProps) {
-  const [featuredMachines, setFeaturedMachines] = useState<Machinery[]>([]);
+export default function HomePage({ onEnquire }: HomePageProps) {
+  const navigate = useNavigate();
+  const [featuredMachines, setFeaturedMachines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,19 +20,17 @@ export default function HomePage({ onNavigate, onEnquire }: HomePageProps) {
 
   const fetchFeaturedMachines = async () => {
     try {
-      const { data, error } = await supabase
-        .from('machinery')
-        .select('*')
-        .eq('featured', true)
-        .limit(3);
-
-      if (error) throw error;
-      setFeaturedMachines(data || []);
+      const machines = await getFeaturedMachineries(3);
+      setFeaturedMachines(machines);
     } catch (error) {
       console.error('Error fetching featured machines:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewAllMachineries = () => {
+    navigate('/vehicles');
   };
 
   return (
@@ -53,7 +52,7 @@ export default function HomePage({ onNavigate, onEnquire }: HomePageProps) {
           <Button
             variant="primary"
             size="lg"
-            onClick={() => onNavigate('vehicles')}
+            onClick={handleViewAllMachineries}
             className="group"
           >
             Browse Machines
@@ -147,13 +146,13 @@ export default function HomePage({ onNavigate, onEnquire }: HomePageProps) {
           ) : (
             <div className="text-center py-12 bg-white rounded-xl">
               <p className="text-gray-600 mb-4">No featured machines available at the moment.</p>
-              <Button onClick={() => onNavigate('vehicles')}>View All Machines</Button>
+              <Button onClick={handleViewAllMachineries}>View All Machines</Button>
             </div>
           )}
 
           {featuredMachines.length > 0 && (
             <div className="text-center mt-12">
-              <Button onClick={() => onNavigate('vehicles')} variant="outline" size="lg">
+              <Button onClick={handleViewAllMachineries} variant="primary" size="lg">
                 View All Machines
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>

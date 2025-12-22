@@ -169,7 +169,7 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="bg-primary rounded-2xl p-12 text-center">
+        {/* <div className="bg-primary rounded-2xl p-12 text-center">
           <h2 className="text-3xl font-bold text-dark mb-4">
             Ready to Power Your Next Project?
           </h2>
@@ -191,7 +191,7 @@ export default function AboutPage() {
               Email Us
             </a>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,38 +1,55 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import MachineryCard from '../components/MachineryCard';
-import { supabase, type Machinery } from '../lib/supabase';
+import { getAllMachineries } from '../lib/api';
 
 type VehiclesPageProps = {
-  onEnquire: (machinery: Machinery) => void;
+  onEnquire: (machinery: any) => void;
 };
+
+interface Machinery {
+  id: number;
+  title: string;
+  status: string;
+  image_url?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+interface ApiResponse {
+  data: Machinery[];
+  total: number;
+  page: number;
+  limit: number;
+}
 
 export default function VehiclesPage({ onEnquire }: VehiclesPageProps) {
   const [machinery, setMachinery] = useState<Machinery[]>([]);
-  const [filteredMachinery, setFilteredMachinery] = useState<Machinery[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedAvailability, setSelectedAvailability] = useState('all');
-  const [priceRange, setPriceRange] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     fetchMachinery();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [machinery, searchTerm, selectedType, selectedAvailability, priceRange]);
+  }, [currentPage, searchTerm, selectedStatus]);
 
   const fetchMachinery = async () => {
     try {
-      const { data, error } = await supabase
-        .from('machinery')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setMachinery(data || []);
+      setLoading(true);
+      const response: ApiResponse = await getAllMachineries({
+        page: currentPage,
+        limit: itemsPerPage,
+        title: searchTerm,
+        status: selectedStatus
+      });
+      
+      setMachinery(response.data);
+      setTotalItems(response.total);
+      setTotalPages(Math.ceil(response.total / itemsPerPage));
     } catch (error) {
       console.error('Error fetching machinery:', error);
     } finally {
@@ -40,147 +57,83 @@ export default function VehiclesPage({ onEnquire }: VehiclesPageProps) {
     }
   };
 
-  const applyFilters = () => {
-    let filtered = [...machinery];
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (m) =>
-          m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          m.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          m.type.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  const handleStatusFilter = (status: string) => {
+    setSelectedStatus(status);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
 
-    if (selectedType !== 'all') {
-      filtered = filtered.filter((m) => m.type === selectedType);
-    }
-
-    if (selectedAvailability === 'available') {
-      filtered = filtered.filter((m) => m.is_available);
-    } else if (selectedAvailability === 'unavailable') {
-      filtered = filtered.filter((m) => !m.is_available);
-    }
-
-    if (priceRange !== 'all') {
-      filtered = filtered.filter((m) => {
-        const price = m.price_per_day;
-        switch (priceRange) {
-          case 'low':
-            return price < 500;
-          case 'medium':
-            return price >= 500 && price <= 1000;
-          case 'high':
-            return price > 1000;
-          default:
-            return true;
-        }
-      });
-    }
-
-    setFilteredMachinery(filtered);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top when changing pages
   };
 
   const resetFilters = () => {
     setSearchTerm('');
-    setSelectedType('all');
-    setSelectedAvailability('all');
-    setPriceRange('all');
+    setSelectedStatus('all');
+    setCurrentPage(1);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div
-        className="relative h-72 bg-cover bg-center flex items-center"
-        style={{
-          backgroundImage: "url('https://images.pexels.com/photos/1169754/pexels-photo-1169754.jpeg?auto=compress&cs=tinysrgb&w=1920')",
-        }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-60"></div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
-          <h1 className="text-5xl font-bold mb-4">Our Fleet</h1>
-          <p className="text-xl text-primary">Browse our complete range of heavy machinery</p>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center mb-4">
-            <Filter className="h-5 w-5 text-primary mr-2" />
-            <h2 className="text-lg font-bold text-dark">Filter & Search</h2>
-          </div>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-dark mb-4">Our Fleet</h1>
+          <p className="text-lg text-gray-600">Browse our complete range of heavy machinery</p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        {/* Search and Filter Controls */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Search */}
             <div>
               <label className="block text-sm font-semibold text-dark mb-2">
-                Search
+                Search Machinery
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name or keyword..."
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search by title..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
             </div>
 
-            <div>
+            {/* Status Filter */}
+            {/* <div>
               <label className="block text-sm font-semibold text-dark mb-2">
-                Machine Type
+                Status
               </label>
               <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
+                value={selectedStatus}
+                onChange={(e) => handleStatusFilter(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               >
-                <option value="all">All Types</option>
-                <option value="excavator">Excavator</option>
-                <option value="crane">Crane</option>
-                <option value="loader">Loader</option>
-                <option value="dump_truck">Dump Truck</option>
-                <option value="bulldozer">Bulldozer</option>
+                <option value="all">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-dark mb-2">
-                Availability
-              </label>
-              <select
-                value={selectedAvailability}
-                onChange={(e) => setSelectedAvailability(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="all">All</option>
-                <option value="available">Available</option>
-                <option value="unavailable">Unavailable</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-dark mb-2">
-                Price Range
-              </label>
-              <select
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="all">All Prices</option>
-                <option value="low">Under $500/day</option>
-                <option value="medium">$500 - $1000/day</option>
-                <option value="high">Over $1000/day</option>
-              </select>
-            </div>
+            </div> */}
           </div>
 
-          <div className="flex items-center justify-between text-sm">
+          {/* Results Summary and Reset */}
+          <div className="flex items-center justify-between text-sm mt-4 pt-4 border-t border-gray-200">
             <p className="text-gray-600">
-              Showing <span className="font-semibold text-dark">{filteredMachinery.length}</span> of{' '}
-              <span className="font-semibold text-dark">{machinery.length}</span> machines
+              Showing <span className="font-semibold text-dark">{machinery.length}</span> of{' '}
+              <span className="font-semibold text-dark">{totalItems}</span> machines
+              {currentPage > 1 && (
+                <span className="ml-2 text-gray-500">
+                  (Page {currentPage} of {totalPages})
+                </span>
+              )}
             </p>
             <button
               onClick={resetFilters}
@@ -191,25 +144,93 @@ export default function VehiclesPage({ onEnquire }: VehiclesPageProps) {
           </div>
         </div>
 
+        {/* Loading State */}
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-4 text-gray-600">Loading machinery...</p>
           </div>
-        ) : filteredMachinery.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredMachinery.map((machine) => (
-              <MachineryCard
-                key={machine.id}
-                machinery={machine}
-                onEnquire={onEnquire}
-              />
-            ))}
-          </div>
+        ) : machinery.length > 0 ? (
+          <>
+            {/* Machinery Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+              {machinery.map((machine) => (
+                <MachineryCard
+                  key={machine.id}
+                  machinery={machine}
+                  onEnquire={onEnquire}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center space-x-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`flex items-center px-4 py-2 rounded-lg ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-3 py-2 rounded-lg ${
+                          currentPage === pageNum
+                            ? 'bg-primary text-white'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`flex items-center px-4 py-2 rounded-lg ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
+          /* No Results */
           <div className="text-center py-20 bg-white rounded-xl">
             <p className="text-xl text-gray-600 mb-2">No machines found</p>
-            <p className="text-gray-500 mb-6">Try adjusting your filters or search terms</p>
+            <p className="text-gray-500 mb-6">Try adjusting your search terms or filters</p>
             <button
               onClick={resetFilters}
               className="text-primary hover:text-yellow-600 font-semibold"
