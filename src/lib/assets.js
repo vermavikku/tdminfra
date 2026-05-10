@@ -1,0 +1,7 @@
+export const asset = (path) => path
+
+export const slugify = (value) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
