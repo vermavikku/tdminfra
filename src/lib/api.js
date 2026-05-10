@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = 'https://tdminfra-backend-py8m.vercel.app'
+const DEFAULT_API_BASE_URL = 'https://dev.tdminfra.in'
 
 export const API_BASE_URL = (import.meta.env.VITE_TDMINFRA_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '')
 
