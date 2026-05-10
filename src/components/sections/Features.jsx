@@ -30,14 +30,14 @@ const Features = () => {
           ))}
         </div>
 
-        <div className="flex justify-center mt-10 animate-fade-up" style={{ animationDelay: '180ms' }}>
+        {/* <div className="flex justify-center mt-10 animate-fade-up" style={{ animationDelay: '180ms' }}>
           <Link
             to="/contact"
             className="inline-flex items-center justify-center min-h-[48px] px-6 rounded-full border border-slate-300 bg-white text-slate-800 font-medium hover:bg-slate-900 hover:text-white transition-all"
           >
             View our ISO Certificates
           </Link>
-        </div>
+        </div> */}
       </div>
     </section>
   )
