@@ -31,7 +31,7 @@ const Hero = () => {
 
         <div>
           <span className="block text-sm font-semibold tracking-wide text-sky-600 uppercase">
-            TDM Infra Rental
+            TDM Infra 
           </span>
 
           <h1 className="mt-3 font-extrabold leading-[1.08] tracking-tight text-slate-900 text-[clamp(1.75rem,7vw,3.25rem)]">

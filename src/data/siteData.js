@@ -2,9 +2,9 @@ import { asset, slugify } from '../lib/assets'
 
 export const contactDetails = {
   email: 'info@rmmanlift.com',
-  phone: '+91 93200 73725',
-  secondaryPhone: '+91 86575 70393',
-  whatsapp: '+91 93200 73725',
+  phone: '+91 9619763358',
+  secondaryPhone: '+91 9619763358',
+  whatsapp: '+91 9619763358',
 }
 
 export const heroLogos = [

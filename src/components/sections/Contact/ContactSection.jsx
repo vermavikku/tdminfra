@@ -148,10 +148,10 @@ const ContactSection = () => {
             <a href={`tel:${contactDetails.phone.replace(/\s/g, "")}`} className="text-blue-700 font-medium hover:underline">
               {contactDetails.phone}
             </a>{" "}
-            or{" "}
+            {/* or{" "}
             <a href={`tel:${contactDetails.secondaryPhone.replace(/\s/g, "")}`} className="text-blue-700 font-medium hover:underline">
               {contactDetails.secondaryPhone}
-            </a>
+            </a> */}
           </p>
         </div>
 

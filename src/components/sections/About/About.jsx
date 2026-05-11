@@ -12,7 +12,7 @@ const About = () => {
           <span className={eyebrow}>About TDM Infra</span>
           <h2 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
             All your Access & Lifting <br />
-            Equipment Rental needs covered
+            Equipment  needs covered
           </h2>
         </div>
 

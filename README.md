@@ -1,6 +1,6 @@
-# TDM Infra Rental - Equipment Rental Website
+# TDM Infra  - Equipment  Website
 
-A modern React + Vite website for TDM Infra, an Indian equipment rental company specializing in boom lifts, cranes, scissor lifts, and truck mounted lifts for industrial and commercial projects.
+A modern React + Vite website for TDM Infra, an Indian equipment  company specializing in boom lifts, cranes, scissor lifts, and truck mounted lifts for industrial and commercial projects.
 
 ## Project Overview
 
@@ -152,7 +152,7 @@ npm run preview  # Preview production build
 
 ## Business Context
 
-TDM Infra (formerly RM Manlift) is an Indian equipment rental company providing:
+TDM Infra (formerly RM Manlift) is an Indian equipment  company providing:
 - Boom Lifts (30 ft to 200 ft)
 - Cranes (20 ton to 400 ton)
 - Scissor Lifts (19 ft to 105 ft)
