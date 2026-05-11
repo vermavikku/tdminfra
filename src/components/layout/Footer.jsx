@@ -48,30 +48,59 @@ const Footer = () => {
     };
   }, []);
 
+  const normalizeNumber = (value) =>
+    String(value || "").replace(/\D/g, "");
+
+  const phoneContacts = [];
+  const addedNumbers = new Set();
+
+  const addPhoneContact = (value, href) => {
+    const normalized = normalizeNumber(value);
+    if (!normalized || addedNumbers.has(normalized) || phoneContacts.length >= 2) {
+      return;
+    }
+
+    addedNumbers.add(normalized);
+    phoneContacts.push({
+      label: value,
+      href,
+      icon: "☎",
+    });
+  };
+
+  addPhoneContact(
+    contactInfo.phone,
+    `tel:${contactInfo.phone.replace(/\s/g, "")}`
+  );
+  addPhoneContact(
+    contactInfo.secondaryPhone,
+    `tel:${contactInfo.secondaryPhone.replace(/\s/g, "")}`
+  );
+
+  const whatsappNumber = normalizeNumber(contactInfo.whatsapp);
+  const whatsappHref = whatsappNumber
+    ? `https://wa.me/${contactInfo.whatsapp
+        .replace(/\D/g, "")
+        .replace(/^0/, "")
+        .replace(/^(?!91)/, "91")}`
+    : "";
+
   const contactItems = [
     {
       label: contactInfo.email,
       href: `mailto:${contactInfo.email}`,
       icon: "✉",
     },
-    {
-      label: contactInfo.phone,
-      href: `tel:${contactInfo.phone.replace(/\s/g, "")}`,
-      icon: "☎",
-    },
-    {
-      label: contactInfo.secondaryPhone,
-      href: `tel:${contactInfo.secondaryPhone.replace(/\s/g, "")}`,
-      icon: "☎",
-    },
-    {
-      label: "WhatsApp",
-      href: `https://wa.me/${contactInfo.whatsapp
-        .replace(/\D/g, "")
-        .replace(/^0/, "")
-        .replace(/^(?!91)/, "91")}`,
-      icon: "◎",
-    },
+    ...phoneContacts,
+    ...(whatsappNumber
+      ? [
+          {
+            label: "WhatsApp",
+            href: whatsappHref,
+            icon: "◎",
+          },
+        ]
+      : []),
   ];
 
   return (
