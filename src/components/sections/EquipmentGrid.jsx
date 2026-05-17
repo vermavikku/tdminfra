@@ -270,7 +270,7 @@ const EquipmentGrid = ({ compact = false }) => {
   }, [fallbackCardsForPage, isLoading, machineries, useFallbackData])
 
   const showPagination = !compact && totalPages > 1 && !isLoading
-  const showCompactCta = location.pathname !== '/equipments' && !compact
+  const showCompactCta = location.pathname !== '/equipments'
 
   return (
     <section className={`py-14 sm:py-16 md:py-24 ${compact ? 'pt-10 sm:pt-12' : ''}`}>
